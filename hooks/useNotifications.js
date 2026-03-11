@@ -10,11 +10,12 @@ import * as Notifications from 'expo-notifications';
 
 export default function useNotifications() {
   const [notifications, setNotifications] = useState([]);
+  const [expoPushToken, setExpoPushToken] = useState(null);
 
   useEffect(() => {
     // Configure notification behavior when the app is in the foreground.
     Notifications.setNotificationHandler({
-      handleNotification: async () => ({ shouldShowAlert: true, shouldPlaySound: false, shouldSetBadge: false }),
+      handleNotification: async () => ({ shouldShowBanner: true, shouldShowList: true, shouldPlaySound: false, shouldSetBadge: false }),
     });
 
     // Request permission, checking current status first to avoid prompting unnecessarily.
@@ -34,7 +35,8 @@ export default function useNotifications() {
         const pushTokenData = await Notifications.getExpoPushTokenAsync({
           projectId: 'b5341bb9-4e49-43a9-afe3-86eca9ac3a97', // from app.json > extra.eas.projectId
         });
-          console.log('Expo Push Token:', pushTokenData);
+        console.log('Expo Push Token:', pushTokenData);
+        setExpoPushToken(pushTokenData.data);
       } catch (e) {
         console.error('Failed to get push token:', e);
       }
@@ -67,6 +69,7 @@ export default function useNotifications() {
   }
 
   return {
+    expoPushToken,
     notifications,
     addNotification,
     removeNotification,

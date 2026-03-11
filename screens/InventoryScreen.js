@@ -18,10 +18,11 @@ import {
 import ProductItem from '../components/ProductItem';
 import AddEditProduct from '../components/AddEditProduct';
 import useProducts from '../hooks/useProducts';
-import * as Notifications from 'expo-notifications';
+import useNotifications from '../hooks/useNotifications';
 
 export default function InventoryScreen() {
   const { products, loading, posting, fetchProducts, createProduct, updateProduct, deleteProduct } = useProducts();
+  const { expoPushToken } = useNotifications();
 
   const [editingId, setEditingId] = useState(null);
   const [name, setName] = useState('');
@@ -52,14 +53,23 @@ export default function InventoryScreen() {
       } else {
         await createProduct(body);
         //Alert.alert('Success', 'Product added');
-        Notifications.scheduleNotificationAsync({
-          content: {
-            title: 'Inventory updated',
-            body: `${name.trim()} has been added to the inventory.`,
-            channelId: 'default',
-          },
-          trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: 1 },
-        });
+        if (expoPushToken) {
+          console.log('[Push] Sending to token:', expoPushToken);
+          fetch('https://exp.host/--/api/v2/push/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              to: expoPushToken,
+              title: 'Store updated',
+              body: `${name.trim()} has been added. Browse the inventory to see the latest products!`,
+            }),
+          })
+            .then(res => res.json())
+            .then(data => console.log('[Push] Expo API response:', JSON.stringify(data)))
+            .catch(err => console.error('[Push] Fetch error:', err));
+        } else {
+          console.warn('[Push] No expoPushToken available yet');
+        }
       }
 
       setName('');
