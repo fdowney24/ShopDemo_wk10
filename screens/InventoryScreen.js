@@ -18,6 +18,7 @@ import {
 import ProductItem from '../components/ProductItem';
 import AddEditProduct from '../components/AddEditProduct';
 import useProducts from '../hooks/useProducts';
+import * as Notifications from 'expo-notifications';
 
 export default function InventoryScreen() {
   const { products, loading, posting, fetchProducts, createProduct, updateProduct, deleteProduct } = useProducts();
@@ -50,7 +51,15 @@ export default function InventoryScreen() {
         Alert.alert('Success', 'Product updated');
       } else {
         await createProduct(body);
-        Alert.alert('Success', 'Product added');
+        //Alert.alert('Success', 'Product added');
+        Notifications.scheduleNotificationAsync({
+          content: {
+            title: 'Inventory updated',
+            body: `${name.trim()} has been added to the inventory.`,
+            channelId: 'default',
+          },
+          trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: 1 },
+        });
       }
 
       setName('');

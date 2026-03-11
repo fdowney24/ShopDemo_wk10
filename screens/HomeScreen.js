@@ -4,10 +4,42 @@
 //    - navigation: react-navigation prop used to navigate to other screens
 // - Output: renders a welcome message and a button to go to Inventory.
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
+import * as Notifications from 'expo-notifications';
+import useBasket from '../hooks/useBasket';
+import useNotifications from '../hooks/useNotifications';
 
 export default function HomeScreen({ navigation }) {
+  const { basket, loadBasket } = useBasket('demo-user-1');
+  useNotifications(); // registers handler, requests permission, and sets up Android channel
+
+  // Load the basket on mount and every time the screen comes back into focus.
+  useEffect(() => {
+    loadBasket().catch(() => {});
+    const unsubscribe = navigation.addListener('focus', () => {
+      loadBasket().catch(() => {});
+    });
+    return unsubscribe;
+  }, [navigation]);
+
+  // Remind the user if they have items in the basket.
+  useEffect(() => {
+    const itemCount = basket?.items?.length ?? 0;
+    if (itemCount > 0) {
+      // Uncomment to prevent duplicate notifications if the user navigates back and forth.
+      // Notifications.cancelAllScheduledNotificationsAsync();
+      Notifications.scheduleNotificationAsync({
+        content: {
+          title: 'Items in your basket',
+          body: `You have ${itemCount} item(s) waiting — don't forget to checkout!`,
+          channelId: 'default',
+        },
+        trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: 5 },
+      });
+    }
+  }, [basket]);
+
   return (
     <View style={styles.container}>
       <View style={styles.center}>
