@@ -4,14 +4,14 @@
 node_modules/
 
 # google files
-google-services.json
+# google-services.json
 
 # Local environment files
 .env
 
 # Local config file (do not commit secrets)
 config.js
-config.example.js
+#config.example.js
 
 # Expo
 .expo/
