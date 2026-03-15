@@ -8,13 +8,15 @@
 // - Notes: All functions throw on non-OK responses. BASE_URL should point to backend server.
 
 import { BASE_URL as CONFIG_BASE_URL } from '../config.example';
+import { getAuthHeaders } from './authToken';
+
 const BASE_URL = CONFIG_BASE_URL || 'https://your-backend.example';
 
 // Fetch the list of products from the backend.
 // Throws an Error if the response is not ok.
 async function getProducts() {
   const res = await fetch(`${BASE_URL}/products`, {
-    headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
+    headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true', ...getAuthHeaders() },
   });
   if (!res.ok) throw new Error(`Server responded ${res.status}`);
   return res.json();
@@ -25,7 +27,7 @@ async function getProducts() {
 async function createProduct(body) {
   const res = await fetch(`${BASE_URL}/products`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
+    headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true', ...getAuthHeaders() },
     body: JSON.stringify(body),
   });
   if (!res.ok) {
@@ -44,7 +46,7 @@ async function createProduct(body) {
 async function updateProduct(id, body) {
   const res = await fetch(`${BASE_URL}/products/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
+    headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true', ...getAuthHeaders() },
     body: JSON.stringify(body),
   });
   if (!res.ok) {
@@ -62,7 +64,7 @@ async function updateProduct(id, body) {
 async function deleteProduct(id) {
   const res = await fetch(`${BASE_URL}/products/${id}`, {
     method: 'DELETE',
-    headers: { 'ngrok-skip-browser-warning': 'true' },
+    headers: { 'ngrok-skip-browser-warning': 'true', ...getAuthHeaders() },
   });
   if (!res.ok) {
     const text = await res.text();

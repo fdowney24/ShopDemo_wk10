@@ -1,12 +1,16 @@
 // App
-// - Purpose: Application entry point. Sets up React Navigation with Home and Inventory screens.
-// - Output: NavigationContainer with stack navigator containing `Home` and `Inventory`.
+// - Purpose: Application entry point. Sets up auth context and React Navigation.
+//   Shows Login/Register screens when unauthenticated, main app screens when authenticated.
 
 import { useEffect, useRef } from 'react';
+import { ActivityIndicator, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as Notifications from 'expo-notifications';
 
+import { AuthProvider, useAuth } from './context/AuthContext';
+import LoginScreen from './screens/LoginScreen';
+import RegisterScreen from './screens/RegisterScreen';
 import HomeScreen from './screens/HomeScreen';
 import InventoryScreen from './screens/InventoryScreen';
 import ProductBrowser from './screens/ProductBrowser';
@@ -14,8 +18,8 @@ import ProductBasket from './screens/ProductBasket';
 
 const Stack = createNativeStackNavigator();
 
-export default function App() {
-  // A ref to the navigator so we can navigate from outside a screen component.
+function Navigation() {
+  const { token, loading } = useAuth();
   const navigationRef = useRef(null);
 
   useEffect(() => {
@@ -28,14 +32,37 @@ export default function App() {
     return () => subscription.remove();
   }, []);
 
+  if (loading) {
+    return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><ActivityIndicator size="large" /></View>;
+  }
+
   return (
     <NavigationContainer ref={navigationRef}>
-      <Stack.Navigator initialRouteName="Home">
-        <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="Inventory" component={InventoryScreen} options={{ title: 'Inventory' }} />
-        <Stack.Screen name="ProductBrowser" component={ProductBrowser} options={{ title: 'Products' }} />
-        <Stack.Screen name="ProductBasket" component={ProductBasket} options={{ title: 'Basket' }} />
+      <Stack.Navigator>
+        {token ? (
+          // Authenticated screens
+          <>
+            <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen name="Inventory" component={InventoryScreen} options={{ title: 'Inventory' }} />
+            <Stack.Screen name="ProductBrowser" component={ProductBrowser} options={{ title: 'Products' }} />
+            <Stack.Screen name="ProductBasket" component={ProductBasket} options={{ title: 'Basket' }} />
+          </>
+        ) : (
+          // Auth screens
+          <>
+            <Stack.Screen name="Login" component={LoginScreen} options={{ title: 'Sign In' }} />
+            <Stack.Screen name="Register" component={RegisterScreen} options={{ title: 'Create Account' }} />
+          </>
+        )}
       </Stack.Navigator>
     </NavigationContainer>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <Navigation />
+    </AuthProvider>
   );
 }

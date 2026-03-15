@@ -6,11 +6,13 @@
 //    - removeFromBasket({ userId, productId, removeAll })
 
 import { BASE_URL as CONFIG_BASE_URL } from '../config.example';
+import { getAuthHeaders } from './authToken';
+
 const BASE_URL = CONFIG_BASE_URL || 'https://your-backend.example';
 
 async function getBasket(userId) {
   const res = await fetch(`${BASE_URL}/basket/${encodeURIComponent(userId)}`, {
-    headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' }
+    headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true', ...getAuthHeaders() }
   });
   if (!res.ok) throw new Error(`Server responded ${res.status}`);
   return res.json();
@@ -19,7 +21,7 @@ async function getBasket(userId) {
 async function addToBasket(body) {
   const res = await fetch(`${BASE_URL}/basket/add`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
+    headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true', ...getAuthHeaders() },
     body: JSON.stringify(body),
   });
   if (!res.ok) {
@@ -32,7 +34,7 @@ async function addToBasket(body) {
 async function removeFromBasket(body) {
   const res = await fetch(`${BASE_URL}/basket/remove`, {
     method: 'DELETE',
-    headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
+    headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true', ...getAuthHeaders() },
     body: JSON.stringify(body),
   });
   if (!res.ok) {
